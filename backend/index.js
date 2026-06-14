@@ -17,5 +17,12 @@ io.on("connection",()=>{
       console.log("Client connected");
 })
 
+//defining a route
+app.get('/',(req,res)=>{
+      res.send('route');
+});
 
-
+//starting the server
+app.listen(port,()=>{
+ console.log('server listening at http://localhost:${port}');
+});

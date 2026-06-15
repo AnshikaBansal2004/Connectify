@@ -44,53 +44,65 @@ import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 
 const Chat = () => {
-  const [msg, setMessage] = useState("");
-  const [socket, setSocket] = useState(null);
+      const [msg, setMessage] = useState("");
+      const [socket, setSocket] = useState(null);
+      const [msgs, setMessages] = useState([]);
 
-  useEffect(() => {
-    const newSocket = io("http://localhost:8080");
+      useEffect(() => {
+            const newSocket = io("http://localhost:8080");
 
-    setSocket(newSocket);
+            setSocket(newSocket);
 
-    return () => {
-      newSocket.close();
-    };
-  }, []);
+            return () => {
+                  newSocket.close();
+            };
+      }, []);
 
-  const sendMessage = (e) => {
-    e.preventDefault();
+      const sendMessage = (e) => {
+            e.preventDefault();
 
-    if (socket && msg.trim()) {
-      socket.emit("chat message", msg);
-      console.log("Sent:", msg);
-      setMessage("");
-    }
-  };
+            if (socket && msg.trim()) {
+                  socket.emit("chat message", msg);
+                  setMessages([...msgs, msg]);
+                  console.log("Sent:", msg);
+                  setMessage("");
+            }
+      };
 
-  return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">
-        Chat App
-      </h1>
+      return (
+            <div className="p-4">
+                  <h1 className="text-xl font-bold mb-4">
+                        Chat App
+                  </h1>
+                  <div className="message-container">
+                        {
+                              msgs.map((msg, index) => {
+                                    return (
+                                          <div key={index} className="message text-right m-5">
+                                                {msg}
+                                          </div>
+                                    );
+                              })
+                        }
+                  </div>
+                  <form onSubmit={sendMessage}>
+                        <input
+                              type="text"
+                              value={msg}
+                              onChange={(e) => setMessage(e.target.value)}
+                              placeholder="Type a message..."
+                              className="border p-2 mr-2"
+                        />
 
-      <form onSubmit={sendMessage}>
-        <input
-          type="text"
-          value={msg}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type a message..."
-          className="border p-2 mr-2"
-        />
-
-        <button
-          type="submit"
-          className="text-white bg-blue-500 px-4 py-2 rounded"
-        >
-          Send
-        </button>
-      </form>
-    </div>
-  );
+                        <button
+                              type="submit"
+                              className="text-white bg-blue-500 px-4 py-2 rounded"
+                        >
+                              Send
+                        </button>
+                  </form>
+            </div>
+      );
 };
 
 export default Chat;

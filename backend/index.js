@@ -9,7 +9,12 @@ const port = process.env.PORT || 5000; //5000 is default, in case .env is not fo
 const app = express(); //application
 
 const server = http.createServer(app); //http server on top of the express app
-const io = new Server(server); //socket server
+const io = new Server(server,{
+      cors:{
+            allowedHeaders:["*"],
+            origin:"*" //adding these to prevent (strict_origin_when_cross_origin). Setting these to allow traffic from all sources
+      }
+}); //socket server
 
 //websocket connections to the socket server 
 // when connection is established, 
@@ -23,6 +28,6 @@ app.get('/',(req,res)=>{
 });
 
 //starting the server
-app.listen(port,()=>{
+server.listen(port,()=>{
  console.log('server listening at http://localhost:${port}');
 });

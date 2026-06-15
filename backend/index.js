@@ -18,8 +18,11 @@ const io = new Server(server,{
 
 //websocket connections to the socket server 
 // when connection is established, 
-io.on("connection",()=>{
+io.on("connection",(socket)=>{
       console.log("Client connected");
+      socket.on("chat message",(msg)=>{
+            console.log('recieved the message '+msg);
+      });
 })
 
 //defining a route

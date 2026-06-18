@@ -11,4 +11,4 @@ const generateJWTtokenandsetCookie = (userID,res)=>{
       })
 }
 
-export default generateJWTtokenandsetCookie
+export default generateJWTtokenandsetCookie     

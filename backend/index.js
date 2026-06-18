@@ -21,6 +21,7 @@ const io = new Server(server,{
 io.on("connection",(socket)=>{
       console.log("Client connected");
       socket.on("chat message",(msg)=>{
+            socket.broadcast.emit('chat msg',msg); //broadcast the message to all other clients
             console.log('recieved the message '+msg);
       });
 })

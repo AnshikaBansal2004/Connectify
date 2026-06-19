@@ -20,6 +20,8 @@ const io = new Server(server,{
 // when connection is established, 
 io.on("connection",(socket)=>{
       console.log("Client connected");
+      const username = socket.handshake.query.username;
+      console.log("username: ",username);
       socket.on("chat message",(msg)=>{
             socket.broadcast.emit('chat msg',msg); //broadcast the message to all other clients
             console.log('recieved the message '+msg);

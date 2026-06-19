@@ -49,7 +49,11 @@ const Chat = () => {
     const [msgs, setMessages] = useState([]);
 
     useEffect(() => {
-        const newSocket = io("http://localhost:8080");
+        const newSocket = io("http://localhost:8080",{
+            query:{
+                  username : "anshika"
+            }
+        });
 
         setSocket(newSocket);
 

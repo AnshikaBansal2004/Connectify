@@ -40,29 +40,16 @@ const Auth = () => {
 
     const LoginFunc = async () => {
         try {
-            const res = await axios.post(
-                "http://localhost:5000/auth/login",
+            const res = await axios.post("http://localhost:5000/auth/login",
                 {
                     username,
                     password,
-                },
-                {
-                    withCredentials : true
-                }
-            );
+                });
+            alert("Login successful!");
+            router.push('/chat');
 
-            if (
-                res.data.message ===
-                "Username already exists. Please select a unique username"
-            ) {
-                alert(res.data.message);
-            } else {
-                alert("Signup successful!");
-                router.push("/chat");
-            }
         } catch (error) {
-            console.log("Error in signup function:", error.message);
-            alert("Signup failed");
+            console.log("Error in login function:", error.message);
         }
     };
 

@@ -38,6 +38,34 @@ const Auth = () => {
         }
     };
 
+    const LoginFunc = async () => {
+        try {
+            const res = await axios.post(
+                "http://localhost:5000/auth/login",
+                {
+                    username,
+                    password,
+                },
+                {
+                    withCredentials : true
+                }
+            );
+
+            if (
+                res.data.message ===
+                "Username already exists. Please select a unique username"
+            ) {
+                alert(res.data.message);
+            } else {
+                alert("Signup successful!");
+                router.push("/chat");
+            }
+        } catch (error) {
+            console.log("Error in signup function:", error.message);
+            alert("Signup failed");
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
             <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
@@ -69,8 +97,8 @@ const Auth = () => {
                     <div className="flex gap-4 pt-2">
                         <button
                             type="button"
+                            onClick={LoginFunc}
                             className="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition"
-                            disabled
                         >
                             Login
                         </button>

@@ -10,3 +10,8 @@ router.post('/signup',signup); //when routed to /signup, run the signup logic
 router.post('/login',login);
 
 export default router;  
+
+//index.js -> /auth
+// /signup
+// /login 
+// API used - post 

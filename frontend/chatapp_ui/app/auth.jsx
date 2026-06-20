@@ -46,7 +46,10 @@ const Auth = () => {
                 {
                     username,
                     password,
-                });
+                },
+            {
+                withCredentials : true
+            });
             alert("Login successful!");
             updateAuthName(username);
             router.push('/chat');

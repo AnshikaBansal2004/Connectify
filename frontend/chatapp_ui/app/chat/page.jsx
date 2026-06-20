@@ -43,12 +43,20 @@ export default Chat
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 import useAuthStore from "../../zustand/useAuthStore";
+import axios from "axios"; //for making http calls 
 
 const Chat = () => {
     const [msg, setMessage] = useState("");
     const [socket, setSocket] = useState(null);
     const [msgs, setMessages] = useState([]);
     const {authName} = useAuthStore();
+
+    const getUserData = async() =>{
+        const res = await axios.get('http://localhost:5000/users',{
+            withCredentials : true
+        })
+        console.log(res.data);
+    }
 
     useEffect(() => {
         const newSocket = io("http://localhost:8080",{
@@ -70,6 +78,8 @@ const Chat = () => {
                 },
             ]);
         });
+
+        getUserData();
 
         return () => {
             newSocket.close();

@@ -13,8 +13,9 @@ const port = process.env.PORT || 5000;
 const app = express(); //application
 //MIDDLEWARE:
 app.use(cors(
-      {credentials : true,
-       origin : "http://localhost:3000"
+      {
+       origin : "http://localhost:3000",
+       credentials : true,
       }
 ));
 app.use(express.json()); //parses the incoming request bodyand populates req.body with the JSON format data

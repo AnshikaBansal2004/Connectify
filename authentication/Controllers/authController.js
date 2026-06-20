@@ -32,23 +32,23 @@ const signup = async(req,res) => {
 // doing the login 
 export const login = async(req,res) => {
       try{
-            console.log("Loggin in the user");
+            console.log("Logging in the user");
 
             const{username,password} = req.body;
 
             //sending this new record to the DB:
             const foundUser = await User.findOne({username}); //checks if user exists in the database
             if(!foundUser){
-                  res.status(401).json({message: 'Username does not exist. Please signup'});
+                return  res.status(401).json({message: 'Username does not exist. Please signup'});
             }
             else{
                  const passwordMatch = await bcrypt.compare(password,foundUser?.password);
                  if(!passwordMatch){
-                  res.status(401).json({message: 'Incorrect password'});
+                  return res.status(401).json({message: 'Incorrect password'});
                  }
                  else{
-                  generateJWTtokenandsetCookie(username._id,res);
-                  res.status(201).json({_id : foundUser._id,username : foundUser.username});
+                  generateJWTtokenandsetCookie(foundUser._id,res);
+                   res.status(201).json({_id : foundUser._id,username : foundUser.username});
                  }
             }
       }

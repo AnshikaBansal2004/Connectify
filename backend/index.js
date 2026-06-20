@@ -16,17 +16,26 @@ const io = new Server(server,{
       }
 }); //socket server
 
+const userSocketMap={};
+
 //websocket connections to the socket server 
 // when connection is established, 
 io.on("connection",(socket)=>{
-      console.log("Client connected"      );
+      console.log("Client connected");
       const username = socket.handshake.query.username;
-      console.log("username: ",username);
+      console.log("username of client connected: ",username);
+
+      userSocketMap[username] = socket; //storing the connected client in the map 
+
       socket.on("chat message",(msg)=>{
           //  socket.broadcast.emit('chat msg',msg); //broadcast the message to all other clients
-            console.log("sender:",msg.sender);
-            console.log("reciever",msg.reciver);
-            console.log('recieved the message ', msg.textMsg);
+            // console.log("sender:",msg.sender);
+            // console.log("reciever",msg.reciver);
+            // console.log('recieved the message ', msg.textMsg);
+            const recieverSocket =  userSocketMap[msg.reciver];
+            if(recieverSocket){
+            recieverSocket.emit('chat msg',msg);
+          }
       });
 })
 

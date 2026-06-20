@@ -42,16 +42,18 @@ export default Chat
 
 import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
+import useAuthStore from "../../zustand/useAuthStore";
 
 const Chat = () => {
     const [msg, setMessage] = useState("");
     const [socket, setSocket] = useState(null);
     const [msgs, setMessages] = useState([]);
+    const {authName} = useAuthStore();
 
     useEffect(() => {
         const newSocket = io("http://localhost:8080",{
             query:{
-                  username : "anshika"
+                  username : authName
             }
         });
 
@@ -76,9 +78,14 @@ const Chat = () => {
 
     const sendMessage = (e) => {
         e.preventDefault();
+        const msgtobesent = {
+            textMsg : msg,
+            sender : "amit",
+            reciver : "anshika"
+        };
 
-        if (socket && msg.trim()) {
-            socket.emit("chat message", msg);
+        if (socket) {
+            socket.emit("chat message", msgtobesent);
 
             setMessages((prev) => [
                 ...prev,

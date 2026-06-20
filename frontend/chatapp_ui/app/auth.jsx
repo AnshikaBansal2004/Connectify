@@ -3,13 +3,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import useAuthStore from "../zustand/useAuthStore";
 
 const Auth = () => {
     const router = useRouter();
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-
+    const {authName, updateAuthName} = useAuthStore(); //custom hook 
     const signUpFunc = async () => {
         try {
             const res = await axios.post(
@@ -30,6 +31,7 @@ const Auth = () => {
                 alert(res.data.message);
             } else {
                 alert("Signup successful!");
+                updateAuthName(username);   
                 router.push("/chat");
             }
         } catch (error) {
@@ -46,6 +48,7 @@ const Auth = () => {
                     password,
                 });
             alert("Login successful!");
+            updateAuthName(username);
             router.push('/chat');
 
         } catch (error) {

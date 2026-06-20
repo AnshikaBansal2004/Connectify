@@ -19,12 +19,14 @@ const io = new Server(server,{
 //websocket connections to the socket server 
 // when connection is established, 
 io.on("connection",(socket)=>{
-      console.log("Client connected");
+      console.log("Client connected"      );
       const username = socket.handshake.query.username;
       console.log("username: ",username);
       socket.on("chat message",(msg)=>{
-            socket.broadcast.emit('chat msg',msg); //broadcast the message to all other clients
-            console.log('recieved the message '+msg);
+          //  socket.broadcast.emit('chat msg',msg); //broadcast the message to all other clients
+            console.log("sender:",msg.sender);
+            console.log("reciever",msg.reciver);
+            console.log('recieved the message ', msg.textMsg);
       });
 })
 

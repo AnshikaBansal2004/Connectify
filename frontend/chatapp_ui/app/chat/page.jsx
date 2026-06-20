@@ -5,22 +5,29 @@ import io from "socket.io-client";
 import useAuthStore from "../../zustand/useAuthStore";
 import axios from "axios";
 import useUsersStore from "../../zustand/useUsersStore";
-
+import UsersList from "../../_components/UsersList";
 const Chat = () => {
     const [msg, setMessage] = useState("");
     const [socket, setSocket] = useState(null);
     const [msgs, setMessages] = useState([]);
 
     const { authName } = useAuthStore();
-    const { users, updateUsers } = useUsersStore();
+    const { updateUsers } = useUsersStore();
 
     const getUserData = async () => {
-        const res = await axios.get("http://localhost:5000/users", {
-            withCredentials: true,
-        });
+        try {
+            const res = await axios.get(
+                "http://localhost:5000/users",
+                {
+                    withCredentials: true,
+                }
+            );
 
-        updateUsers(res.data);
-        console.log(res.data);
+            updateUsers(res.data);
+            console.log(res.data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
     };
 
     useEffect(() => {
@@ -71,26 +78,15 @@ const Chat = () => {
                 },
             ]);
 
+            console.log("Sent:", msg);
             setMessage("");
         }
     };
 
     return (
         <div className="flex h-screen">
-
             {/* LEFT PANEL - USERS */}
-            <div className="w-1/3 border-r p-4 overflow-y-auto">
-                <h2 className="text-xl font-bold mb-4">Users</h2>
-
-                {users?.map((user) => (
-                    <div
-                        key={user._id}
-                        className="p-3 mb-2 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer"
-                    >
-                        {user.username}
-                    </div>
-                ))}
-            </div>
+            <UsersList />
 
             {/* RIGHT PANEL - CHAT */}
             <div className="w-2/3 flex flex-col">
@@ -120,7 +116,10 @@ const Chat = () => {
                 </div>
 
                 {/* INPUT */}
-                <form onSubmit={sendMessage} className="flex gap-2 p-4 border-t">
+                <form
+                    onSubmit={sendMessage}
+                    className="flex gap-2 p-4 border-t"
+                >
                     <input
                         type="text"
                         value={msg}
@@ -136,7 +135,6 @@ const Chat = () => {
                         Send
                     </button>
                 </form>
-
             </div>
         </div>
     );

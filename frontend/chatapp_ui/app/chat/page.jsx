@@ -17,83 +17,125 @@ const Chat = () => {
     const { updateUsers } = useUsersStore();
     const { recieverName } = useChatRecieverStore();
 
+    // ---------------- FETCH USERS ----------------
     const getUserData = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:5000/users",
-                {
-                    withCredentials: true,
-                }
-            );
+            const res = await axios.get("http://localhost:5000/users", {
+                withCredentials: true,
+            });
 
             updateUsers(res.data);
-            console.log(res.data);
         } catch (error) {
             console.error("Error fetching users:", error);
         }
     };
 
+    const CHAT_SERVER = "http://localhost:8080";
+
+    // ---------------- FETCH CHAT HISTORY ----------------
     useEffect(() => {
-        const newSocket = io("http://localhost:8080", {
-            query: {
-                username: authName,
-            },
+        if (!authName || !recieverName) {
+            setMessages([]);
+            return;
+        }
+
+        const loadMessages = async () => {
+            try {
+                const res = await axios.get(`${CHAT_SERVER}/messages`, {
+                    params: { user1: authName, user2: recieverName },
+                });
+
+                setMessages(
+                    res.data.map((m) => ({
+                        text: m.text,
+                        sender: m.sender,
+                        receiver: m.receiver,
+                        sentByMe: m.sender === authName,
+                    }))
+                );
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+            }
+        };
+
+        loadMessages();
+    }, [authName, recieverName]);
+
+    // ---------------- SOCKET SETUP ----------------
+    useEffect(() => {
+        if (!authName) return;
+
+        const newSocket = io(CHAT_SERVER, {
+            query: { username: authName },
         });
 
         setSocket(newSocket);
+        getUserData();
 
-        newSocket.on("chat msg", (msg) => {
-            console.log("Received:", msg);
+        return () => newSocket.close();
+    }, [authName]);
+
+    useEffect(() => {
+        if (!socket || !authName || !recieverName) return;
+
+        const onChatMsg = (data) => {
+            const isCurrentChat =
+                (data.sender === authName && data.receiver === recieverName) ||
+                (data.sender === recieverName && data.receiver === authName);
+
+            if (!isCurrentChat) return;
 
             setMessages((prev) => [
                 ...prev,
                 {
-                    text: msg,
-                    sentByMe: false,
+                    text: data.text,
+                    sender: data.sender,
+                    receiver: data.receiver,
+                    sentByMe: data.sender === authName,
                 },
             ]);
-        });
-
-        getUserData();
-
-        return () => {
-            newSocket.close();
         };
-    }, []);
 
+        socket.on("chat msg", onChatMsg);
+        return () => socket.off("chat msg", onChatMsg);
+    }, [socket, authName, recieverName]);
+
+    // ---------------- SEND MESSAGE ----------------
     const sendMessage = (e) => {
         e.preventDefault();
 
-        const msgtobesent = {
-            textMsg: msg,
+        if (!msg.trim() || !socket || !recieverName) return;
+
+        const messagePayload = {
+            text: msg,
             sender: authName,
-            reciver: recieverName,
+            receiver: recieverName,
         };
 
-        if (socket) {
-            socket.emit("chat message", msgtobesent);
+        socket.emit("chat message", messagePayload);
 
-            setMessages((prev) => [
-                ...prev,
-                {
-                    text: msg,
-                    sentByMe: true,
-                },
-            ]);
+        setMessages((prev) => [
+            ...prev,
+            {
+                text: msg,
+                sender: authName,
+                receiver: recieverName,
+                sentByMe: true,
+            },
+        ]);
 
-            console.log("Sent:", msg);
-            setMessage("");
-        }
+        setMessage("");
     };
 
     return (
         <div className="flex h-screen">
-            {/* LEFT PANEL - USERS */}
+            {/* LEFT PANEL */}
             <UsersList />
 
-            {/* RIGHT PANEL - CHAT */}
-
+            {/* RIGHT PANEL */}
             <div className="w-2/3 flex flex-col">
+
+                {/* HEADER */}
                 <div className="border-b p-4 font-semibold text-lg">
                     {authName && recieverName ? (
                         <span>
@@ -103,21 +145,22 @@ const Chat = () => {
                         <span>Select a user to start chatting</span>
                     )}
                 </div>
+
                 {/* MESSAGES */}
                 <div className="flex-1 p-4 overflow-y-auto">
                     {msgs.map((msg, index) => (
                         <div
                             key={index}
-                            className={`flex mb-3 ${msg.sentByMe
-                                    ? "justify-end"
-                                    : "justify-start"
-                                }`}
+                            className={`flex mb-3 ${
+                                msg.sentByMe ? "justify-end" : "justify-start"
+                            }`}
                         >
                             <div
-                                className={`px-4 py-2 rounded-lg max-w-xs break-words ${msg.sentByMe
+                                className={`px-4 py-2 rounded-lg max-w-xs break-words ${
+                                    msg.sentByMe
                                         ? "bg-blue-500 text-white"
                                         : "bg-gray-300 text-black"
-                                    }`}
+                                }`}
                             >
                                 {msg.text}
                             </div>
@@ -140,7 +183,8 @@ const Chat = () => {
 
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        disabled={!recieverName}
+                        className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
                     >
                         Send
                     </button>

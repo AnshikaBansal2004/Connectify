@@ -2,49 +2,70 @@ import express from "express";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
+import { addMsgToConversation, getConversationMessages } from "./controller/msgs.controller.js";
+import connectToMongoDB from "./db/MongoDbConnection.js";
 
-dotenv.config(); //dotenv pkg loads env variables from .env to process.env
-const port = process.env.PORT || 5000; //5000 is default, in case .env is not found
+dotenv.config();
 
-const app = express(); //application
+const port = process.env.PORT || 8080;
 
-const server = http.createServer(app); //http server on top of the express app
-const io = new Server(server,{
-      cors:{
-            allowedHeaders:["*"],
-            origin:"*" //adding these to prevent (strict_origin_when_cross_origin). Setting these to allow traffic from all sources
-      }
-}); //socket server
+const app = express();
+const server = http.createServer(app);
 
-const userSocketMap={};
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+});
+app.use(express.json());
 
-//websocket connections to the socket server 
-// when connection is established, 
-io.on("connection",(socket)=>{
-      console.log("Client connected");
-      const username = socket.handshake.query.username;
-      console.log("username of client connected: ",username);
-
-      userSocketMap[username] = socket; //storing the connected client in the map 
-
-      socket.on("chat message",(msg)=>{
-          //  socket.broadcast.emit('chat msg',msg); //broadcast the message to all other clients
-            // console.log("sender:",msg.sender);
-            // console.log("reciever",msg.reciver);
-            // console.log('recieved the message ', msg.textMsg);
-            const recieverSocket =  userSocketMap[msg.reciver];
-            if(recieverSocket){
-            recieverSocket.emit('chat msg',msg);
-          }
-      });
-})
-
-//defining a route
-app.get('/',(req,res)=>{
-      res.send('route');
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        allowedHeaders: ["*"]
+    }
 });
 
-//starting the server
-server.listen(port,()=>{
- console.log('server listening at http://localhost:${port}');
+// ---------------- SOCKET CONNECTION ----------------
+io.on("connection", (socket) => {
+    console.log("Client connected");
+
+    const username = socket.handshake.query.username;
+
+    console.log("username:", username);
+
+    if (username) {
+        socket.join(username);
+    }
+
+    // ---------------- MESSAGE HANDLER ----------------
+    socket.on("chat message", (msg) => {
+        console.log("Received msg:", msg);
+
+        io.to(msg.receiver).emit("chat msg", msg);
+
+        addMsgToConversation([msg.sender, msg.receiver], {
+            text: msg.text,
+            sender: msg.sender,
+            receiver: msg.receiver,
+        });
+    });
+
+    // ---------------- DISCONNECT ----------------
+    socket.on("disconnect", () => {
+        console.log("Disconnected:", username);
+    });
+});
+
+// ---------------- ROUTES ----------------
+app.get("/", (req, res) => {
+    res.send("route working");
+});
+
+app.get("/messages", getConversationMessages);
+
+// ---------------- START SERVER ----------------
+server.listen(port, () => {
+    connectToMongoDB();
+    console.log(`server listening at http://localhost:${port}`);
 });

@@ -6,6 +6,8 @@ import useAuthStore from "../../zustand/useAuthStore";
 import axios from "axios";
 import useUsersStore from "../../zustand/useUsersStore";
 import UsersList from "../../_components/UsersList";
+import useChatRecieverStore from "../../zustand/useChatRecieverStore";
+
 const Chat = () => {
     const [msg, setMessage] = useState("");
     const [socket, setSocket] = useState(null);
@@ -13,6 +15,7 @@ const Chat = () => {
 
     const { authName } = useAuthStore();
     const { updateUsers } = useUsersStore();
+    const { recieverName } = useChatRecieverStore();
 
     const getUserData = async () => {
         try {
@@ -63,8 +66,8 @@ const Chat = () => {
 
         const msgtobesent = {
             textMsg: msg,
-            sender: "amit",
-            reciver: "anshika",
+            sender: authName,
+            reciver: recieverName,
         };
 
         if (socket) {
@@ -89,25 +92,32 @@ const Chat = () => {
             <UsersList />
 
             {/* RIGHT PANEL - CHAT */}
-            <div className="w-2/3 flex flex-col">
 
+            <div className="w-2/3 flex flex-col">
+                <div className="border-b p-4 font-semibold text-lg">
+                    {authName && recieverName ? (
+                        <span>
+                            {authName} is chatting with {recieverName}
+                        </span>
+                    ) : (
+                        <span>Select a user to start chatting</span>
+                    )}
+                </div>
                 {/* MESSAGES */}
                 <div className="flex-1 p-4 overflow-y-auto">
                     {msgs.map((msg, index) => (
                         <div
                             key={index}
-                            className={`flex mb-3 ${
-                                msg.sentByMe
+                            className={`flex mb-3 ${msg.sentByMe
                                     ? "justify-end"
                                     : "justify-start"
-                            }`}
+                                }`}
                         >
                             <div
-                                className={`px-4 py-2 rounded-lg max-w-xs break-words ${
-                                    msg.sentByMe
+                                className={`px-4 py-2 rounded-lg max-w-xs break-words ${msg.sentByMe
                                         ? "bg-blue-500 text-white"
                                         : "bg-gray-300 text-black"
-                                }`}
+                                    }`}
                             >
                                 {msg.text}
                             </div>

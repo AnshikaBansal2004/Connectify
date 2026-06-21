@@ -4,9 +4,9 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 const app = express();
 
 const routes = {
-      "/api/auth" : "http://localhost:5000",
-      "/api/users" : "http://localhost:8080",
-      "/api/msgs" : "http://localhost:8080",
+      "/api/auth" : "http://localhost:5000/auth",
+      "/api/users" : "http://localhost:8080/users",
+      "/api/msgs" : "http://localhost:8080/msgs",
 }
 
 for(const route in routes){

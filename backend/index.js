@@ -4,6 +4,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { addMsgToConversation, getConversationMessages } from "./controller/msgs.controller.js";
 import connectToMongoDB from "./db/MongoDbConnection.js";
+import msgsRouter from "./routes/msgs.route.js";
 
 dotenv.config();
 
@@ -63,6 +64,8 @@ app.get("/", (req, res) => {
 });
 
 app.get("/messages", getConversationMessages);
+
+app.use('/msgs',msgsRouter);
 
 // ---------------- START SERVER ----------------
 server.listen(port, () => {

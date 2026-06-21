@@ -1,5 +1,7 @@
 import Conversation from "../models/chat.model.js";
 
+const sortParticipants = (participants) => [...participants].sort();
+
 export const getConversationMessages = async (req, res) => {
     try {
         const { user1, user2 } = req.query;
@@ -9,7 +11,7 @@ export const getConversationMessages = async (req, res) => {
         }
 
         const conversation = await Conversation.findOne({
-            users: { $all: [user1, user2] },
+            users: { $all: [user1, user2], $size: 2 },
         });
 
         return res.status(200).json(conversation?.msgs ?? []);
@@ -21,13 +23,14 @@ export const getConversationMessages = async (req, res) => {
 
 export const addMsgToConversation = async (participants, msg) => {
     try {
-        // Find conversation by participants
-        let conversation = await Conversation.findOne(
-                            { users: { $all: participants } });
+        const sortedUsers = sortParticipants(participants);
 
-        // If conversation doesn't exist, create a new one
+        let conversation = await Conversation.findOne({
+            users: { $all: sortedUsers, $size: 2 },
+        });
+
         if (!conversation) {
-            conversation = await Conversation.create({ users: participants });
+            conversation = await Conversation.create({ users: sortedUsers });
         }
 
         // Add msg to the conversation
@@ -37,5 +40,24 @@ export const addMsgToConversation = async (participants, msg) => {
     } catch (error) {
         console.log('Error adding message to conversation: ' + error.message);
         return null;
+    }
+};
+
+export const getMsgsForConversation = async (req, res) => {
+    try {
+        const { sender, receiver } = req.query;
+
+        if (!sender || !receiver) {
+            return res.status(400).json({ message: "sender and receiver are required" });
+        }
+
+        const conversation = await Conversation.findOne({
+            users: { $all: [sender, receiver], $size: 2 },
+        });
+
+        return res.status(200).json(conversation?.msgs ?? []);
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        return res.status(500).json({ message: "Failed to fetch messages" });
     }
 };

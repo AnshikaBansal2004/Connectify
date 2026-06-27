@@ -49,6 +49,8 @@ io.on("connection", (socket) => {
             console.log("Received msg:", msg);
 
             io.to(msg.receiver).emit("chat msg", msg);
+            const channelName = `chat_${msg.receiver}`;
+            publish(channelName, JSON.stringify(msg));
 
             addMsgToConversation([msg.sender, msg.receiver], {
                   text: msg.text,

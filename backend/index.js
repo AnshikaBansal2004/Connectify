@@ -14,61 +14,66 @@ const app = express();
 const server = http.createServer(app);
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-    res.header("Access-Control-Allow-Credentials", "true");
-    next();
+      res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+      res.header("Access-Control-Allow-Credentials", "true");
+      next();
 });
 app.use(express.json());
 
 const io = new Server(server, {
-    cors: {
-        origin: "*",
-        allowedHeaders: ["*"]
-    }
+      cors: {
+            origin: "*",
+            allowedHeaders: ["*"]
+      }
 });
 
 // ---------------- SOCKET CONNECTION ----------------
 io.on("connection", (socket) => {
-    console.log("Client connected");
+      console.log("Client connected");
 
-    const username = socket.handshake.query.username;
+      const username = socket.handshake.query.username;
 
-    console.log("username:", username);
+      console.log("username:", username);
 
-    if (username) {
-        socket.join(username);
-    }
+      if (username) {
+            socket.join(username);
+      }
+      const channelName = `chat_${username}`;
 
-    // ---------------- MESSAGE HANDLER ----------------
-    socket.on("chat message", (msg) => {
-        console.log("Received msg:", msg);
+      subscribe(channelName, (msg) => {
+            console.log("Received message:", msg);
+            socket.emit("chatmsg", JSON.parse(msg));
+      });
+      // ---------------- MESSAGE HANDLER ----------------
+      socket.on("chat message", (msg) => {
+            console.log("Received msg:", msg);
 
-        io.to(msg.receiver).emit("chat msg", msg);
+            io.to(msg.receiver).emit("chat msg", msg);
 
-        addMsgToConversation([msg.sender, msg.receiver], {
-            text: msg.text,
-            sender: msg.sender,
-            receiver: msg.receiver,
-        });
-    });
+            addMsgToConversation([msg.sender, msg.receiver], {
+                  text: msg.text,
+                  sender: msg.sender,
+                  receiver: msg.receiver,
+            });
+      });
 
-    // ---------------- DISCONNECT ----------------
-    socket.on("disconnect", () => {
-        console.log("Disconnected:", username);
-    });
+      // ---------------- DISCONNECT ----------------
+      socket.on("disconnect", () => {
+            console.log("Disconnected:", username);
+      });
 });
 
 // ---------------- ROUTES ----------------
 app.get("/", (req, res) => {
-    res.send("route working");
+      res.send("route working");
 });
 
 app.get("/messages", getConversationMessages);
 
-app.use('/msgs',msgsRouter);
+app.use('/msgs', msgsRouter);
 
 // ---------------- START SERVER ----------------
 server.listen(port, () => {
-    connectToMongoDB();
-    console.log(`server listening at http://localhost:${port}`);
+      connectToMongoDB();
+      console.log(`server listening at http://localhost:${port}`);
 });

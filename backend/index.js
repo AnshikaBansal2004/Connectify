@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { addMsgToConversation, getConversationMessages } from "./controller/msgs.controller.js";
 import connectToMongoDB from "./db/MongoDbConnection.js";
 import msgsRouter from "./routes/msgs.route.js";
+import { subscribe,publish } from "./redis/msgsPubSub.js";
 
 dotenv.config();
 

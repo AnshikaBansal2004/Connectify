@@ -1,23 +1,27 @@
 services:
   backend:
+    image : anshikabansal2004/chat-backend:lts
     build:
       context: ./backend   # Path to the backend Dockerfile
     ports:
       - "8080:8080"
 
   backend2:
+    image : anshikabansal2004/chat-backend2:lts
     build:
       context: ./backend   # Path to the backend Dockerfile
     ports:
       - "8084:8080"
 
   auth-backend:
+    image : anshikabansal2004/chat-auth:lts
     build:
       context: ./auth-backend   # Path to the backend Dockerfile
     ports:
       - "5000:5000"
 
   frontend:
+    image : anshikabansal2004/chat-client:lts
     build:
       context: ./client   # Path to the frontend Dockerfile
     ports:
@@ -25,7 +29,8 @@ services:
     depends_on:
       - backend   # Wait for backend service to be ready before starting frontend
       
-frontend:
+frontend2:
+  image : anshikabansal2004/chat-client2:lts
   build:
     context: ./client_2   # Path to the frontend Dockerfile
   ports:
